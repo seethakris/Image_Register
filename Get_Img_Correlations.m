@@ -1,4 +1,4 @@
-function Get_Img_Correlations
+function get_img_correlations
 %% Take a representative stack and look for closely matched image with data
 
 close all
