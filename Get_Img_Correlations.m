@@ -23,7 +23,7 @@ num_stk_rep = 31;
 
 for ii = 1:num_stk_data
     
-    Stack_Image(:,:) = imread([Image_Folder1, 'Raw_Z=', int2str(ii),'_Max.jpg']);
+    Stack_Image(:,:) = imread([Data_Folder, 'Raw_Z=', int2str(ii),'_Max.jpg']);
     Stack_Image(:,1:620) = 0;
     Stack_Image(Stack_Image<20) = 0;
     temp_Stack_Image = Stack_Image(:,620:end);
@@ -33,7 +33,7 @@ for ii = 1:num_stk_data
         
         disp(['Stack_Image ', int2str(ii), ' Gcamp_Image ',int2str(jj)])
         
-        Gcamp = imread([Image_Folder2,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',jj), '_c01.tif']);
+        Gcamp = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',jj), '_c01.tif']);
         
         %Find correlation and offset
         cc(:,:,jj,ii) = xcorr2(temp_Stack_Image,Gcamp(:,445:850) );
