@@ -7,8 +7,8 @@ warning off
 
 % Folders and variable declaration
 
-Data_Folder =  '~/Desktop/Image_Register/Fish056_Before/';
-Rep_Image_Folder =  '~/Desktop/Image_Register/1011_GCamp3_KR11_KissPeptinreceptor_F2/';
+Data_Folder =  '~/Desktop/Image_Register/Data/Fish056_Before/';
+Rep_Image_Folder =  '~/Desktop/Image_Register/Data/1011_GCamp3_KR11_KissPeptinreceptor_F2/';
 
 
 Result_Folder = [Data_Folder, 'Corr_Images'];
