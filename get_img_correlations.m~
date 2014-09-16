@@ -18,7 +18,7 @@ mkdir(Result_Folder)
 num_stk_data = 5;
 num_stk_rep = 31;
 
-x_lim_rep1 = 446;
+x_lim_rep1 = 445;
 x_lim_rep2 = 850;
 
 x_lim_data1 = 620;
@@ -30,9 +30,9 @@ y_lim_data2 = 'end';
 for ii = 1:num_stk_data
     
     Stack_Image(:,:) = imread([Data_Folder, 'Raw_Z=', int2str(ii),'_Max.jpg']);
-    Stack_Image(:,1:620) = 0;
+    eval(Stack_Image(:,1:620) = 0;
     Stack_Image(Stack_Image<20) = 0;
-    temp_Stack_Image = eval(['Stack_Image(:,', int2str(x_lim_data1),':', y_lim_data2, ')']);
+    temp_Stack_Image = Stack_Image(:,620:end);
 
     
     for jj = 1:num_stk_rep
@@ -53,7 +53,7 @@ for ii = 1:num_stk_data
         fs1 = figure(1);
         set(fs1, 'visible','off')
         subplot(1,2,1)
-        imshow(eval(['Gcamp(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']))
+        imshow(Gcamp(:,445:850))
         subplot(1,2,2)
         imshow(temp_Stack_Image)
         title(['Offset y ', int2str(corr_offset(1,jj,ii)), ' Offset x ', int2str(corr_offset(2,jj,ii))]);
