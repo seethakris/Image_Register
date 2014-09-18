@@ -1,48 +1,33 @@
-function image_correlation_registration
+function image_correlation_registration(Exp_name, Data_Folder, Data_Corr_Folder, Rep_Image_Folder, Result_Folder, ...
+    num_stk_data, num_tim_data, x_lim_rep1, x_lim_rep2, x_lim_data1, x_lim_data2, ...
+    flag, z_data_dist, z_rep_dist)
 
 %% Get best correlated image and register the data with it
 
-close all
-warning off
-
-% If flag = 1, just find top and bottom best match and assign other stacks
-% according to z-distance. Flag = 0, find best match for each stack
-
-% Define some variables
-flag = 1;
-z_data_dist = 9;
-z_rep_dist = 1.88;
-num_stk_data = 5;
-num_stk_rep_data = 31;
-
-
-x_lim_rep1 = 445;
-x_lim_rep2 = 850;
-
-x_lim_data1 = 620;
-y_lim_data2 = 'end';
-
-
 % Declare some Folders
-Data_Folder =  '~/Desktop/Image_Register/Data/Fish056_Before/';
-Data_Corr_Folder =  '~/Desktop/Image_Register/Data/Fish056_Before/Corr_Images/';
-Rep_Image_Folder =  '~/Desktop/Image_Register/Data/1011_GCamp3_KR11_KissPeptinreceptor_F2/';
-
-Result_Folder = [Data_Corr_Folder, 'Registered'];
-mkdir(Result_Folder)
+actual_z = num_stk_data;
+Exp_String = 'Fish056_Before_';
 
 % Find best match using the corr offset
 for ii = 1:num_stk_data
-    load([Data_Corr_Folder, 'Stack_', int2str(ii)]);
+    load([Data_Corr_Folder, 'Correlation_Offset_Stack_', int2str(ii)]);
     X(:,ii) = squeeze(corr_off_stk(2,:));
     Y(:,ii) = squeeze(corr_off_stk(1,:));
 end
 
 if flag == 1
-    [~, Z_best(1)] = min(abs(Y(:,1))+abs(X(:,1)));
-    [~, Z_best(num_stk_data)] = min(abs(Y(:,num_stk_data)));
-    for ii = 2:num_stk_data-1
-        Z_best(ii) = Z_best(ii-1) - fix(Z_best(ii)+(z_data_dist/z_rep_dist));
+    if num_stk_data == 1
+        [~, Z_best(1)] = min(abs(Y(:,1))+abs(X(:,1)));
+    else
+        [~, Z_best(1)] = min(abs(Y(:,1))+abs(X(:,1)));
+        [~, Z_best(num_stk_data)] = min(abs(Y(:,num_stk_data)));
+        for ii = 2:num_stk_data-1
+            Z_best(ii) = Z_best(ii-1) - fix(Z_best(ii)+(z_data_dist/z_rep_dist));
+        end
+    end
+else
+    for ii = 1:num_stk_data
+        [~, Z_best(ii)] = min(abs(Y(:,ii))+abs(X(:,ii)));
     end
 end
 
@@ -54,8 +39,13 @@ for ii = 1:num_stk_data
     
     disp(['Registering...Stack_Image ', int2str(ii)])
     
+    % Register the averaged image, plot and save
+    base_img_temp = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best(ii)), '_c01.tif']);
+    base_img = eval(['base_img_temp(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
+    clear base_img_temp
+    
     unreg_img_temp = imread([Data_Folder, 'Raw_Z=', int2str(ii),'_Max.jpg']);
-    unreg_img = eval(['unreg_img_temp(:,', int2str(x_lim_data1),':', y_lim_data2, ')']);
+    unreg_img = eval(['unreg_img_temp(:,', int2str(x_lim_data1),':', x_lim_data2, ')']);
     clear unreg_img_temp
     
     registered_image = image_register(unreg_img, X(Z_best(ii),ii), Y(Z_best(ii),ii));
@@ -65,19 +55,53 @@ for ii = 1:num_stk_data
     
     % Plot and save registered images
     fs1 = figure(1);
-    set(fs1, 'visible','off')
+    set(fs1, 'visible','off', 'color', 'white')
     subplot(1,3,1)
     imshow(base_img)
-    title('Base Image');
+    title(['Base Image Stack', int2str(Z_best(ii))]);
     subplot(1,3,2)
     imshow(unreg_img)
-    title('Unregistered Image');
+    title(['Unregistered Image Stack', int2str(ii)]);
     subplot(1,3,3)
-    imshow(registered_image)
+    imshowpair(base_img, registered_image, 'falsecolor','Scaling','joint');
     title(['Offset y ', int2str(Y(Z_best(ii),ii)), ' Offset x ', int2str(X(Z_best(ii),ii))]);
     
-    name_file = ['Image Registration : Stack_Image ', int2str(ii), ' Gcamp_Image ', int2str(Z_best(ii))];
-    saveas(fs1, [Result_Folder, filesep, name_file], 'jpg');
+    name_file = 'Registered Images';
+    
+    if ii == 1 && exist([Result_Folder, name_file, '.pdf'], 'file')
+        delete([Result_Folder, name_file, '.pdf'])
+    end
+    export_fig([Result_Folder, name_file], '-pdf', '-append');
+    
+    % Register other types of images
+    
+    %Do it for the cell outlines
+    disp(['Cell Outlines', int2str(ii)])
+    unreg_img_temp = imread([Data_Folder, Exp_String, 'Z=', int2str(ii),'.tif']);
+    unreg_img = eval(['unreg_img_temp(:,', int2str(x_lim_data1),':', x_lim_data2, ')']);
+    clear unreg_img_temp
+    
+    registered_image = image_register(unreg_img, X(Z_best(ii),ii), Y(Z_best(ii),ii));
+    name_file = ['Registered_cellROI_Z=', int2str(ii), '.tif'];
+    imwrite(registered_image, [Data_Folder, filesep, name_file]);
+    
+    %Do it for each time point
+    Time_Data_Folder = [Data_Folder, 'Z=', int2str(ii),'/'];
+    Time_Data_Folder_Reg = [Data_Folder, 'Z=', int2str(ii),'/Registered/'];
+    mkdir(Time_Data_Folder_Reg)
+    
+    for jj = 1:num_tim_data
+        disp(['Registering...Stack_Image ', int2str(ii), 'Time Point..', int2str(jj)])
+        t_data = imread([Time_Data_Folder, Exp_name,'t', sprintf('%03.0f',jj),'z', int2str(actual_z), '.tif']);
+        t_data = imresize(t_data,2);
+        unreg_img = eval(['t_data(:,', int2str(x_lim_data1),':', x_lim_data2, ')']);
+        
+        registered_image = image_register(unreg_img, X(Z_best(ii),ii), Y(Z_best(ii),ii));
+        name_file = [Exp_name,'t', sprintf('%03.0f',jj),'z', int2str(actual_z), '.tif'];
+        imwrite(registered_image, [Time_Data_Folder_Reg, name_file]);
+    end
+    
+    actual_z = actual_z-1;
 end
 
 end
@@ -85,6 +109,8 @@ end
 %% Register the image to the best match representative image
 function registered = image_register(unregistered, xoff, yoff)
 
+
+%% Register image by calculating shift
 [yc,xc] = size(unregistered);
 
 if xoff < 0
