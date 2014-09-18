@@ -15,7 +15,7 @@ for ii = 1:num_stk_data
         Gcamp = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',jj), '_c01.tif']);
         
         %Find correlation and offset
-        cc(:,:,jj,ii) = xcorr2(temp_Stack_Image, eval(['Gcamp(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']));
+        cc(:,:,jj,ii) = xcorr2(double(temp_Stack_Image), double(eval(['Gcamp(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')'])));
         temp_cc = squeeze(cc(:,:,jj,ii));
         [max_cc(jj,ii), imax(jj,ii)] = max(abs(temp_cc(:)));
         [ypeak(jj,ii), xpeak(jj,ii)] = ind2sub(size(temp_cc),imax(jj,ii));
