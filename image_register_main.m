@@ -5,8 +5,8 @@ close all
 
 % Define Data Folders
 Representative_Image_Folder =  '~/Desktop/Image_Register/Data/1011_GCamp3_KR11_KissPeptinreceptor_F2/'; %Folder that contains the representative KIss images
-Data_Folder =  '~/Desktop/Image_Register/Data/Fish056_Before/'; %Folder containing the data
-Experiment_name = 'Fish056_Block2_Blue&US1'; %Experiment name as in the Z=1,Z=2, etc folders
+Data_Folder =  '~/Desktop/Image_Register/Data/Fish056_After/'; %Folder containing the data
+Experiment_name = 'Fish056_Block8_Blue&US6'; %Experiment name as in the Z=1,Z=2, etc folders
 
 
 % Define Variables
@@ -19,8 +19,9 @@ num_stack_rep = 31; %Number of stacks in the representative stack
 x_lim_rep1 = 446;  %in rep image
 x_lim_rep2 = 850;
 
-x_lim_data1 = 620; %in data
-x_lim_data2 = 'end';
+%056 Before and After registering
+x_lim_data1 = 610; %in data
+x_lim_data2 = 1024;
 
 %Distance between z_stacks
 z_data_dist = 9;  %in data
@@ -35,8 +36,8 @@ if ~isdir(Result_Folder)
     mkdir(Result_Folder)
 end
 
-get_img_correlations(Data_Folder, Representative_Image_Folder, Result_Folder, num_stack_data, num_stack_rep, ...
-    x_lim_rep1, x_lim_rep2, x_lim_data1, x_lim_data2)
+% get_img_correlations(Data_Folder, Representative_Image_Folder, Result_Folder, num_stack_data, num_stack_rep, ...
+%     x_lim_rep1, x_lim_rep2, x_lim_data1, x_lim_data2)
 
 
 %% Step 2. Get the best correlated image using the offsets and register the stacks with it

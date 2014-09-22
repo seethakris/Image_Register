@@ -11,7 +11,7 @@ actual_z = num_stk_data;
 for ii = 1:num_stk_data
     
     %Import all sorts of data
-    Data = imread([Data_Folder, 'Registered_Raw_Z=', int2str(ii),'_Max.tif']);
+    Data = imread([Data_Folder, 'Registered_with_Rep_Raw_Z=', int2str(ii),'_Max.tif']);
     clear temp_Data
     
     temp_Kiss = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best(ii)), '_c04.tif']);
@@ -22,7 +22,7 @@ for ii = 1:num_stk_data
     Gcamp = eval(['temp_Gcamp(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
     clear temp_Gcamp
     
-    Data_bw = imread([Data_Folder, 'Registered_cellROI_Z=', int2str(ii),'.tif']);
+    Data_bw = imread([Data_Folder, 'Registered_with_Rep_cellROI_Z=', int2str(ii),'.tif']);
     Data_bw = bwmorph(Data_bw, 'thicken');
     
     
@@ -37,7 +37,7 @@ for ii = 1:num_stk_data
     
     %Create only Kiss files using a threshold
     Kiss_Gcamp_add = Kiss+Gcamp;
-    Kiss_Gcamp_add = Kiss_Gcamp_add>100;
+    Kiss_Gcamp_add = Kiss_Gcamp_add>160;
     Kiss_Gcamp_fuse = bwareaopen(Kiss_Gcamp_add,100);
     Kiss_Gcamp_fuse = bwmorph(Kiss_Gcamp_fuse,'thicken');
     
@@ -89,7 +89,7 @@ for ii = 1:num_stk_data
     imshow(imoverlay(Data, Kiss_Gcamp_fuse, [1,0,1]))
     title(['Data Stack ', int2str(ii), '& Kiss, ROIs selected:', int2str(count1-1)]);
     
-    name_file = 'Registered Kiss';
+    name_file = 'Registered Images with Kiss';
     if ii == 1 && exist([Result_Folder, name_file, '.pdf'], 'file')
         delete([Result_Folder, name_file, '.pdf'])
     end
@@ -97,10 +97,10 @@ for ii = 1:num_stk_data
     
     
     %Go through each time point and get intensity of the Kiss pixels.
-    Time_Data_Folder = [Data_Folder, 'Z=', int2str(ii),'/Registered/'];
+    Time_Data_Folder = [Data_Folder, 'Z=', int2str(ii),'/'];
     
     for jj = 1:num_tim_data
-        t_data = imread([Time_Data_Folder, Exp_name,'t', sprintf('%03.0f',jj),'z', int2str(actual_z), '.tif']);
+        t_data = imread([Time_Data_Folder,'Registered_with_Rep_', Exp_name,'t', sprintf('%03.0f',jj),'z', int2str(actual_z), '.tif']);
         for kk = 1:length(pixel_list_kiss)
             t_ROI_data_kiss(kk,jj) = mean(t_data(pixel_list_kiss(kk).boundaries));
         end
@@ -133,14 +133,15 @@ for ii = 1:num_stk_data
         %Plot some figures of the intensity between kiss cells and save
         close all
         fs1 = figure(1);
-        set(fs1, 'visible','on', 'color', 'white')
+        set(fs1, 'visible','off', 'color', 'white')
         subplot(2,1,1)
         plot(mean(t_sm_ROI_data_kiss, 1));
         y = get(gca, 'YLim');
         plot_lines(y, num_tim_data) %Plot lines at stimulus on and off
         title(['Mean Kiss Response Stack', int2str(ii)])
         subplot(2,1,2)
-        imagesc(t_sm_ROI_data_kiss)
+        imagesc(t_sm_ROI_data_kiss, [0 5])
+        colorbar;
         y = get(gca, 'YLim');
         plot_lines(y, num_tim_data)
         
@@ -164,18 +165,23 @@ for ii = 1:num_stk_data
         actual_z = actual_z-1;
         
         %Plot some figures of the intensity between non kiss cells and save
+        close all
         fs1 = figure(1);
-        set(fs1, 'visible','on', 'color', 'white')
+        set(fs1, 'visible','off', 'color', 'white')
         subplot(2,1,1)
         plot(mean(t_sm_ROI_data_nonkiss, 1));
         y = get(gca, 'YLim');
         plot_lines(y,num_tim_data)
         title(['Mean Non Kiss Response Stack', int2str(ii)])
         subplot(2,1,2)
-        imagesc(t_sm_ROI_data_nonkiss)
+        imagesc(t_sm_ROI_data_nonkiss, [0 5])
+        colorbar;
         y = get(gca, 'YLim');
         plot_lines(y,num_tim_data)
         
+        if ii == 1 && exist([Result_Folder, name_file, '.pdf'], 'file')
+            delete([Result_Folder, name_file, '.pdf'])
+        end
         name_file = 'Kiss_NonKiss_ROI_Data';
         export_fig([Result_Folder, filesep, name_file], '-pdf', '-append');
         

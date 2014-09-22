@@ -5,10 +5,18 @@ function get_img_correlations(Data_Folder, Rep_Image_Folder, Result_Folder, num_
 %Loop through each data stack and representative stack and find the best
 %correlated image
 for ii = 1:num_stk_data
-    Stack_Image(:,:) = imread([Data_Folder, 'Raw_Z=', int2str(ii),'_Max.jpg']);
+    
+    %If the after images have been registered with before lesion images
+    if exist([Data_Folder, 'Registered_with_Before_Raw_Z=', int2str(ii),'_Max.jpg'], 'file')
+        Stack_Image(:,:) = imread([Data_Folder, 'Registered_with_Before_Raw_Z=', int2str(ii),'_Max.jpg']);        
+    else
+        Stack_Image(:,:) = imread([Data_Folder, 'Raw_Z=', int2str(ii),'_Max.jpg']);
+    end
+    
+    % Do some preprocessing to remove non habenula and very low intensity ROIs
     Stack_Image(:,1:620) = 0;
     Stack_Image(Stack_Image<20) = 0;
-    temp_Stack_Image = eval(['Stack_Image(:,', int2str(x_lim_data1),':', x_lim_data2, ')']);
+    temp_Stack_Image = eval(['Stack_Image(:,', int2str(x_lim_data1),':', int2str(x_lim_data2), ')']);
     
     for jj = 1:num_stk_rep
         disp(['Stack_Image ', int2str(ii), ' Gcamp_Image ',int2str(jj)])
@@ -33,8 +41,8 @@ for ii = 1:num_stk_data
         title(['Offset y ', int2str(corr_offset(1,jj,ii)), ' Offset x ', int2str(corr_offset(2,jj,ii))]);
         
         %Create a pdf figure
-        name_file = ['Image Correlation Stack ', int2str(ii)];
-        if exist([Result_Folder, name_file, '.pdf'], 'file')
+        name_file = ['Image Correlation with All Representative Images-Stack ', int2str(ii)];
+        if jj == 1 && exist([Result_Folder, name_file, '.pdf'], 'file')
             delete([Result_Folder, name_file, '.pdf'])
         end
         export_fig([Result_Folder, name_file], '-pdf', '-append');
@@ -43,12 +51,12 @@ for ii = 1:num_stk_data
     end
     
     corr_off_stk = corr_offset(:,:,ii);
-    save([Result_Folder, 'Correlation_Offset_Stack_',int2str(ii),'.mat'], 'corr_off_stk')
+    save([Result_Folder, 'Correlation_Offset_with_Rep_Stack_',int2str(ii),'.mat'], 'corr_off_stk')
     
     clear corr_off_stk
 end
 
 %Save all variables for future use
-save([Result_Folder,filesep, 'Correlation_Offset_All_Stack_Variables.mat'])
+save([Result_Folder,filesep, 'Correlation_Offset_with_Rep_All_Stack_Variables.mat'])
 
 
