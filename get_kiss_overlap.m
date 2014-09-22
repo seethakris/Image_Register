@@ -1,5 +1,5 @@
 function get_kiss_overlap(Exp_name, Data_Folder, Data_Corr_Folder, Rep_Image_Folder, Result_Folder,...
-    num_stk_data, num_tim_data, x_lim_rep1, x_lim_rep2)
+    num_stk_data, num_tim_data, x_lim_rep1, x_lim_rep2, y_lim_rep_left1,y_lim_rep_left2, y_lim_rep_right1, y_lim_rep_right2)
 
 %% Get overlapping pixels with kiss peptin from the representative stack and plot as a mask on data
 
@@ -11,16 +11,23 @@ actual_z = num_stk_data;
 for ii = 1:num_stk_data
     
     %Import all sorts of data
-    Data = imread([Data_Folder, 'Registered_with_Rep_Raw_Z=', int2str(ii),'_Max.tif']);
-    clear temp_Data
+    Data = imread([Data_Folder, 'Registered_with_Rep_Raw_Z=', int2str(ii),'_Max.tif']); % Data
     
-    temp_Kiss = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best(ii)), '_c04.tif']);
-    Kiss = eval(['temp_Kiss(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
-    clear temp_Kiss
+    temp_Kiss_left = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best_left(ii)), '_c04.tif']);
+    Kiss_left = eval(['temp_Kiss_left(',int2str(y_lim_rep_left1),':', int2str(y_lim_rep_left2),',', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
+    temp_Kiss_right = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best_right(ii)), '_c04.tif']);
+    Kiss_right = eval(['temp_Kiss_left(',int2str(y_lim_rep_right1),':', int2str(y_lim_rep_right2),',', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
+    Kiss = [Kiss_left; Kiss_right]; % Kiss
     
-    temp_Gcamp = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best(ii)), '_c01.tif']);
-    Gcamp = eval(['temp_Gcamp(:,', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
-    clear temp_Gcamp
+    clear temp_Kiss_left temp_Kiss_right Kiss_left Kiss_right
+    
+    temp_Gcamp_left = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best_left(ii)), '_c01.tif']);
+    Gcamp_left = eval(['temp_Gcamp_left(',int2str(y_lim_rep_left1),':', int2str(y_lim_rep_left2),',', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
+    temp_Gcamp_right = imread([Rep_Image_Folder,'1011_GCamp3_KR11_KissPeptinreceptor_F2_z', sprintf('%02.0f',Z_best_right(ii)), '_c01.tif']);
+    Gcamp_right = eval(['temp_Gcamp_left(',int2str(y_lim_rep_right1),':', int2str(y_lim_rep_right2),',', int2str(x_lim_rep1), ':', int2str(x_lim_rep2),')']);
+    Gcamp = [Gcamp_left; Gcamp_right];
+    
+    clear temp_Gcamp_left temp_Gcamp_right Gcamp_left Gcamp_right
     
     Data_bw = imread([Data_Folder, 'Registered_with_Rep_cellROI_Z=', int2str(ii),'.tif']);
     Data_bw = bwmorph(Data_bw, 'thicken');
@@ -37,7 +44,7 @@ for ii = 1:num_stk_data
     
     %Create only Kiss files using a threshold
     Kiss_Gcamp_add = Kiss+Gcamp;
-    Kiss_Gcamp_add = Kiss_Gcamp_add>160;
+    Kiss_Gcamp_add = Kiss_Gcamp_add>100;
     Kiss_Gcamp_fuse = bwareaopen(Kiss_Gcamp_add,100);
     Kiss_Gcamp_fuse = bwmorph(Kiss_Gcamp_fuse,'thicken');
     

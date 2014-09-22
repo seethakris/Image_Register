@@ -5,7 +5,7 @@ close all
 
 % Define Data Folders
 Representative_Image_Folder =  '~/Desktop/Image_Register/Data/1011_GCamp3_KR11_KissPeptinreceptor_F2/'; %Folder that contains the representative KIss images
-Data_Folder =  '~/Desktop/Image_Register/Data/Fish056_After/'; %Folder containing the data
+Data_Folder =  '~/Desktop/Image_Register/Data/Fish056_Before/'; %Folder containing the data
 Experiment_name = 'Fish056_Block8_Blue&US6'; %Experiment name as in the Z=1,Z=2, etc folders
 
 
@@ -17,11 +17,20 @@ num_stack_rep = 31; %Number of stacks in the representative stack
 
 %Variables for cropping the image to use only the habenula
 x_lim_rep1 = 446;  %in rep image
-x_lim_rep2 = 850;
+x_lim_rep2 = 860;
+y_lim_rep_left1 = 1;
+y_lim_rep_left2 = 500;
+y_lim_rep_right1 = 501;
+y_lim_rep_right2 = 1024;
+
 
 %056 Before and After registering
 x_lim_data1 = 610; %in data
 x_lim_data2 = 1024;
+y_lim_data_left1 = 1;
+y_lim_data_left2 = 500;
+y_lim_data_right1 = 501;
+y_lim_data_right2 = 1024;
 
 %Distance between z_stacks
 z_data_dist = 9;  %in data
@@ -36,23 +45,26 @@ if ~isdir(Result_Folder)
     mkdir(Result_Folder)
 end
 
-% get_img_correlations(Data_Folder, Representative_Image_Folder, Result_Folder, num_stack_data, num_stack_rep, ...
-%     x_lim_rep1, x_lim_rep2, x_lim_data1, x_lim_data2)
+% Do all analysis on the left and right seperately
+get_img_correlations(Data_Folder, Representative_Image_Folder, Result_Folder, num_stack_data, num_stack_rep, ...
+    x_lim_rep1, x_lim_rep2, y_lim_rep_left1,y_lim_rep_left2, y_lim_rep_right1, y_lim_rep_right2,...
+    x_lim_data1, x_lim_data2, y_lim_data_left1, y_lim_data_left2, y_lim_data_right1, y_lim_data_right2)
 
 
 %% Step 2. Get the best correlated image using the offsets and register the stacks with it
-flag = 1; % If flag = 1, just find top and bottom best match and assign other stacks
+flag = 0; % If flag = 1, just find top and bottom best match and assign other stacks
           % according to z-distance. Flag = 0, find best match for each stack
 Data_Correlations_Folder = Result_Folder;           
 
 image_correlation_registration(Experiment_name, Data_Folder, Data_Correlations_Folder, Representative_Image_Folder, Result_Folder, ...
-    num_stack_data, num_time_data, x_lim_rep1, x_lim_rep2, x_lim_data1, x_lim_data2, ...
+    num_stack_data, num_time_data, x_lim_rep1, x_lim_rep2, y_lim_rep_left1,y_lim_rep_left2, y_lim_rep_right1, y_lim_rep_right2,...
+    x_lim_data1, x_lim_data2, y_lim_data_left1, y_lim_data_left2, y_lim_data_right1, y_lim_data_right2,...
     flag, z_data_dist, z_rep_dist)
 
 %% Step 3. Get overlapping pixels with kiss peptin from the representative stack. 
 %% Look at intensity maps of ROIs corresponding to KISS vs Non Kiss
 get_kiss_overlap(Experiment_name, Data_Folder, Data_Correlations_Folder, Representative_Image_Folder, Result_Folder,...
-    num_stack_data, num_time_data, x_lim_rep1, x_lim_rep2)
+    num_stack_data, num_time_data,x_lim_rep1, x_lim_rep2, y_lim_rep_left1,y_lim_rep_left2, y_lim_rep_right1, y_lim_rep_right2)
 
 
 
